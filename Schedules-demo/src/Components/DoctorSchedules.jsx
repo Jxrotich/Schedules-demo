@@ -61,8 +61,19 @@ const DoctorSchedules = () => {
   }
 
   const addAppointment = (appointment) => {
-    setAppointments([...appointments, appointment]);
+    // Find the doctor's name using the doctorId
+    const doctorName = doctors.find(doctor => doctor.id === parseInt(appointment.doctor)).name;
+    
+    // Create a new appointment with the doctor's name
+    const newAppointment = {
+      ...appointment,
+      doctor: doctorName,
+    };
+    
+    setAppointments([...appointments, newAppointment]);
   };
+  
+  
 
   if (error) {
     return <div>Error: {error}</div>;
