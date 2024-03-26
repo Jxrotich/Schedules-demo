@@ -9,23 +9,31 @@ const localizer = momentLocalizer(moment);
 const DoctorSchedules = () => {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]); // Add this line to create a state variable for doctors
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const appointmentsResponse = await fetch('https://hms-json.onrender.com/appointments');
-        const patientsResponse = await fetch('https://hms-json.onrender.com/patients');
-        const appointmentsData = await appointmentsResponse.json();
-        const patientsData = await patientsResponse.json();
-        setAppointments(appointmentsData);
-        setPatients(patientsData);
-      } catch (error) {
-        setError("Error: " + error);
-      }
-    };
+    const fetchAppointments = fetch('https://hms-json.onrender.com/appointments')
+      .then(response => response.json());
 
-    fetchData();
+    const fetchPatients = fetch('https://hms-json.onrender.com/patients')
+      .then(response => response.json());
+
+    const fetchDoctors = fetch('https://hms-json.onrender.com/doctors') // Fetch data from the doctors endpoint
+      .then(response => response.json());
+
+    Promise.all([fetchAppointments, fetchPatients, fetchDoctors])
+      .then(async ([appointmentsData, patientsData, doctorsData]) => {
+        const appointments = await appointmentsData;
+        const patients = await patientsData;
+        const doctors = await doctorsData; // Await the doctors data
+        setAppointments(appointments);
+        setPatients(patients);
+        setDoctors(doctors); // Set the doctors state with the fetched data
+      })
+      .catch(error => {
+        setError("Error: " + error);
+      });
   }, []);
 
   const events = appointments.map(appointment => {
@@ -52,12 +60,49 @@ const DoctorSchedules = () => {
     };
   }
 
+  const addAppointment = (appointment) => {
+    setAppointments([...appointments, appointment]);
+  };
+
   if (error) {
     return <div>Error: {error}</div>;
   }
 
   return (
     <div>
+      <form onSubmit={(event) => {
+        event.preventDefault();
+        const doctorId = event.target.elements.doctor.value;
+        const patientId = event.target.elements.patient.value;
+        const date = event.target.elements.date.value;
+        addAppointment({
+          doctor: doctorId,
+          patientId: patientId,
+          date: date,
+        });
+      }}>
+        <label>
+          Doctor:
+          <select name="doctor">
+            {doctors.map(doctor => (
+              <option key={doctor.id} value={doctor.id}>{doctor.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Patient:
+          <select name="patient">
+            {patients.map(patient => (
+              <option key={patient.id} value={patient.id}>{patient.name}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Date:
+          <input type="datetime-local" name="date" />
+        </label>
+        <button type="submit">Add Appointment</button>
+      </form>
       <Calendar
         localizer={localizer}
         events={events}
