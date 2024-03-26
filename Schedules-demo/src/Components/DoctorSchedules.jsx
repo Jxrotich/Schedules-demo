@@ -9,7 +9,7 @@ const localizer = momentLocalizer(moment);
 const DoctorSchedules = () => {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
-  const [doctors, setDoctors] = useState([]); // Add this line to create a state variable for doctors
+  const [doctors, setDoctors] = useState([]); 
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -19,17 +19,17 @@ const DoctorSchedules = () => {
     const fetchPatients = fetch('https://hms-json.onrender.com/patients')
       .then(response => response.json());
 
-    const fetchDoctors = fetch('https://hms-json.onrender.com/doctors') // Fetch data from the doctors endpoint
+    const fetchDoctors = fetch('https://hms-json.onrender.com/doctors')
       .then(response => response.json());
 
     Promise.all([fetchAppointments, fetchPatients, fetchDoctors])
       .then(async ([appointmentsData, patientsData, doctorsData]) => {
         const appointments = await appointmentsData;
         const patients = await patientsData;
-        const doctors = await doctorsData; // Await the doctors data
+        const doctors = await doctorsData; 
         setAppointments(appointments);
         setPatients(patients);
-        setDoctors(doctors); // Set the doctors state with the fetched data
+        setDoctors(doctors); 
       })
       .catch(error => {
         setError("Error: " + error);
